@@ -92,6 +92,8 @@ void autonomous() {
 
   if(selector::auton == 1){ autonright()};
   if(selector::auton == 2){autonleft()};
+  printf("Selected Auton: %d\n", selector::auton);
+  pros::delay(500);
   
 }
 
