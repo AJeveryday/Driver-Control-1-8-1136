@@ -39,7 +39,7 @@
 #include "./autons.hpp"
 #include "./sylib/sylib.hpp"
 #include "api.h"
-
+#include "autoSelect/selection.h"
 /**
  * You should add more #includes here
  */
