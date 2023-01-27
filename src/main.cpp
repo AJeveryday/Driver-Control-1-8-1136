@@ -90,7 +90,9 @@ void autonomous() {
   chassis.set_angle(0);
   chassis.set_max_speed(115);
 
-  ez::as::auton_selector.call_selected_auton(); // Calls selected auton from autonomous selector.
+  if(selector::auton == 1){ autonright()};
+  if(selector::auton == 2){autonleft()};
+  
 }
 
 
