@@ -12,7 +12,6 @@
 
 //FLYWHEEL CONSTANTS-------------------------------------
 int currentSpeed;
-int targetSpeed = 127;
 int error;
 float Kp = 0.5;
 float Ki = 0.1;
