@@ -8,12 +8,93 @@
 // https://ez-robotics.github.io/EZ-Template/
 /////
 
+int tune_turn;
+// It's best practice to tune constants when the robot is empty and with heavier game objects, or with lifts up vs down.
+// If the objects are light or the cog doesn't change much, then there isn't a concern here.
 
+void default_constants() {
+  chassis.set_slew_min_power(0, 0);
+  chassis.set_slew_distance(0, 0);
+  chassis.set_pid_constants(&chassis.headingPID, 11, 0, 20, 0);
+  chassis.set_pid_constants(&chassis.forward_drivePID, 0.45, 0, 5, 0);
+  chassis.set_pid_constants(&chassis.backward_drivePID, 0.45, 0, 5, 0);
+  chassis.set_pid_constants(&chassis.turnPID, 5, 0.003, 35, 15);
+  chassis.set_pid_constants(&chassis.swingPID, 7, 0, 45, 0);
+}
+
+
+void exit_condition_defaults() {
+  chassis.set_exit_condition(chassis.turn_exit, 100, 3, 500, 7, 500, 500);
+  chassis.set_exit_condition(chassis.swing_exit, 100, 3, 500, 7, 500, 500);
+  chassis.set_exit_condition(chassis.drive_exit, 80, 50, 300, 150, 500, 500);
+}
+
+void modified_exit_condition() {
+  chassis.set_exit_condition(chassis.turn_exit, 100, 3, 500, 7, 500, 500);
+  chassis.set_exit_condition(chassis.swing_exit, 100, 3, 500, 7, 500, 500);
+  chassis.set_exit_condition(chassis.drive_exit, 80, 50, 300, 150, 500, 500);
+}
 
 //FLYWHEEL CONSTANTS-------------------------------------
+const int DRIVE_SPEED = 110; // This is 110/127 (around 87% of max speed).  We don't suggest making this 127.
+                             // If this is 127 and the robot tries to heading correct, it's only correcting by
+                             // making one side slower.  When this is 87%, it's correcting by making one side
+                             // faster and one side slower, giving better heading correction.
+const int TURN_SPEED  = 90;
+const int SWING_SPEED = 90;
 
+int flywheel_start = 3600;
+
+int TUNE = 550;
+
+int L1 = 30;
+int L2 = 10;
+
+int SK1 = 20;
+int SK2 = 20;
+int currentSpeed = 0;
+int error= 0;
+float Kp = 0;
+float Ki = 0;
+float Kd = 0;
+double targetSpeed = 0;
 //FLYWHEEL CONSTANTS--------------------------------------
 
+void autonflywheel(int rpm) {
+  //rpm = rpm/6;
+  flywheel.move_velocity(rpm);
+  currentSpeed = flywheel.get_actual_velocity();
+  targetSpeed = currentSpeed/2;
+
+  for (int i=0; i<=3000/20; i++) {
+    currentSpeed = flywheel.get_actual_velocity();
+    error = targetSpeed- currentSpeed;
+    float P = error * Kp;
+    float I = error * Ki;
+    float D = error * Kd;
+    int output = P+I+D;
+    flywheel.move_velocity(output);
+    pros::delay(10);
+  }
+};
+
+void intakeon() {
+  intake.move_velocity(-180);
+};
+
+void outtakeon() {
+  intake.move_velocity(180);
+}
+
+void intakeoff() {
+  intake.move_velocity(0);
+};
+
+void autonroller() {
+  intake.move_velocity(-200);
+  pros::delay(375);
+  intake.move_velocity(0);
+};
 
 
 
@@ -21,8 +102,25 @@
 
 // Chassis constructor
 Drive chassis (
-  
-  {-3, -5, -17} ,{16, 8, 14}, 21, 4.125, 600, 2.333
+  // Left Chassis Ports (negative port will reverse it!)
+  {-3,-5,-18},
+
+  // Right Chassis Ports (negative port will reverse it!)
+  {16, 8, 14}
+
+  // IMU Port
+  ,21
+
+  // Tracking Wheel Diameter (Remember, 4" wheels are actually 4.125!)
+  ,4.125
+
+  // Ticks per Rotation of Encoder
+  ,600
+
+  // External Gear Ratio of Tracking Wheel (MUST BE DECIMAL)
+  // eg. if your drive is 84:36 where the 36t is sensored, your RATIO would be 2.333.
+  // eg. if your drive is 36:60 where the 60t is sensored, your RATIO would be 0.6.
+  ,2.333
 
 );
 
@@ -42,13 +140,21 @@ void initialize() {
 
   // These are already defaulted to these buttons, but you can change the left/right curve buttons here!
   chassis.set_left_curve_buttons (pros::E_CONTROLLER_DIGITAL_LEFT, pros::E_CONTROLLER_DIGITAL_RIGHT); // If using tank, only the left side is used. 
-  // chassis.set_right_curve_buttons(pros::E_CONTROLLER_DIGITAL_Y,    pros::E_CONTROLLER_DIGITAL_A);
+  chassis.set_right_curve_buttons(pros::E_CONTROLLER_DIGITAL_Y,    pros::E_CONTROLLER_DIGITAL_A);
 
   // Autonomous Selector using LLEMU
 
   // Initialize chassis and auton selector
   chassis.initialize();
-  selector::init();
+  ez::as::initialize();
+  /*ez::as::auton_selector.add_autons(
+    {
+      Auton("asdfas", autonleft),
+    }
+  );
+  */
+
+ 
   
 }
 
@@ -63,45 +169,79 @@ void disabled() {
 
 void competition_initialize() {
   expansion1.set_value(false);
-}
-
-
-
-
-void autonomous() {
-  expansion1.set_value(false);
-
-  chassis.reset_pid_targets(); // Resets PID targets to 0
-  chassis.reset_gyro(); // Reset gyro position to 0
-  chassis.reset_drive_sensor(); // Reset drive sensors to 0
-  chassis.set_drive_brake(MOTOR_BRAKE_HOLD); // Set motors to hold.  This helps autonomous consistency.
-  chassis.set_angle(0);
-  chassis.set_max_speed(115);
-
-  if(selector::auton == 1){ autonright();};
-  if(selector::auton == 2){skillsauton();};
-  printf("Selected Auton: %d\n", selector::auton);
-  pros::delay(500);
   
 }
 
 
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
+
+void autonomous() {
+
+  chassis.reset_pid_targets(); // Resets PID targets to 0
+  chassis.reset_gyro(); // Reset gyro position to 0
+  chassis.reset_drive_sensor(); // Reset drive sensors to 0
+   // Set motors to hold.  This helps autonomous consistency.
+  chassis.set_angle(0);
+  chassis.set_max_speed(115);
+
+  flywheel.move_velocity(550);
+  chassis.set_drive_pid(-7, DRIVE_SPEED);
+  chassis.wait_drive();
+  autonroller();
+  intakeon();
+  chassis.set_swing_pid(ez::LEFT_SWING, 45, SWING_SPEED);
+  chassis.wait_drive();
+  chassis.set_drive_pid(45, DRIVE_SPEED, false, true);
+  chassis.wait_drive();
+  chassis.set_turn_pid(-(45-L1), TURN_SPEED);
+  chassis.wait_drive();
+
+  outtakeon();
+  //autonflywheel(550);
+  intakeoff();
+
+  chassis.set_drive_pid(15, DRIVE_SPEED, false, true);
+  chassis.wait_drive();
+
+  chassis.set_turn_pid(-135, TURN_SPEED);
+  chassis.wait_drive();
+  chassis.set_drive_pid(-85, DRIVE_SPEED, false, true);
+  chassis.wait_drive();
+  pros::delay(500);
+  chassis.set_drive_pid(13, DRIVE_SPEED, false, true);
+  chassis.wait_drive();
+  chassis.set_turn_pid(-90, TURN_SPEED);
+  chassis.wait_drive();
+  chassis.set_drive_pid(-30, DRIVE_SPEED);
+  chassis.wait_drive();
+  autonroller();
+
+  
+  /* 
+  autonindex();
+  chassis.set_turn_pid((45), TURN_SPEED);           // Turn 45+ degrees clockwise
+  chassis.wait_drive();
+  chassis.set_drive_pid(17, DRIVE_SPEED, true);     // Move forward 17 inches
+  chassis.wait_drive();
+  intakeon();
+  chassis.set_drive_pid(33.1, DRIVE_SPEED, true);   // Move forward 33.1 inches
+  chassis.wait_drive();
+  intakeoff();
+  chassis.set_turn_pid(-(90-L1), TURN_SPEED);       // Turn 90-L1 degrees counterclockwise
+  chassis.wait_drive();
+  autonindex();
+  chassis.set_turn_pid((90-L1), TURN_SPEED);        // Turn 90-L1 degrees clockwise
+  chassis.wait_drive();
+  intakeon();
+  chassis.set_turn_pid(18, DRIVE_SPEED);            // Move forward 18 inches
+  intakeoff(); //*/
+}
+
+
+
 
 void opcontrol() {
-  // This is preference to what you like to drive on.
+  
+  
   expansion1.set_value(false);
   chassis.set_drive_brake(MOTOR_BRAKE_COAST);
   flywheel.move_velocity(3600);
@@ -111,9 +251,8 @@ void opcontrol() {
   
   int intake_mode = 0; // Sets up intake control for buttons
   int flywheel_mode = 0; //Sets up flywheel control for buttons
-  
+  chassis.set_drive_pid(23, DRIVE_SPEED);
   while (true) {
-    
     
 
     chassis.tank(); // Tank control
@@ -180,6 +319,7 @@ void opcontrol() {
     }
 
     pros::delay(ez::util::DELAY_TIME); // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
+    
   }
-}
 
+}

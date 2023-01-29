@@ -19,9 +19,9 @@ void modified_exit_condition();
 
 void autonflywheel();
 void intakeon();
+void outtakeon();
 void intakeoff();
 void autonroller();
-void autonindex();
 
 void autonright();
 void autonleft();
