@@ -11,12 +11,7 @@
 
 
 //FLYWHEEL CONSTANTS-------------------------------------
-int currentSpeed;
-int error;
-float Kp = 0.5;
-float Ki = 0.1;
-float Kd = 0.1;
-double targetSpeed;
+
 //FLYWHEEL CONSTANTS--------------------------------------
 
 
@@ -54,13 +49,12 @@ void initialize() {
   ez::as::auton_selector.add_autons({
     Auton ("", autonright),
     Auton("", autonleft),
-    Auton("", autonskills),
   });
 
   // Initialize chassis and auton selector
   chassis.initialize();
   ez::as::initialize();
-  sylib::initialize();
+  
 }
 
 
@@ -89,8 +83,8 @@ void autonomous() {
   chassis.set_angle(0);
   chassis.set_max_speed(115);
 
-  if(selector::auton == 1){ autonright()};
-  if(selector::auton == 2){autonleft()};
+  if(selector::auton == 1){ autonright();};
+  if(selector::auton == 2){autonleft();};
   printf("Selected Auton: %d\n", selector::auton);
   pros::delay(500);
   
@@ -115,8 +109,8 @@ void opcontrol() {
   // This is preference to what you like to drive on.
   expansion1.set_value(false);
   chassis.set_drive_brake(MOTOR_BRAKE_COAST);
-  flywheel.set_velocity(3600);
-  currentSpeed = flywheel.get_velocity();
+  flywheel.move_velocity(3600);
+  currentSpeed = flywheel.get_actual_velocity();
   targetSpeed = currentSpeed/2;
 
   
@@ -136,13 +130,13 @@ void opcontrol() {
     // . . .
     // Put more user control code here!
     // . . .
-    currentSpeed = flywheel.get_velocity();
+    currentSpeed = flywheel.get_actual_velocity();
     error = targetSpeed- currentSpeed;
     float P = error * Kp;
     float I = error * Ki;
     float D = error * Kd;
     int output = P+I+D;
-    flywheel.set_velocity(output+currentSpeed);
+    flywheel.move_velocity(output+currentSpeed);
     pros::delay(20);
 
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) { // When R1 pressed,

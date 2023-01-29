@@ -1,5 +1,5 @@
 #include "main.h"
-#include "selection.h"
+#include "../include/autoSelect/selection.h"
 
 namespace selector{
 

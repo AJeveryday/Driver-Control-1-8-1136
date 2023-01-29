@@ -37,7 +37,7 @@
 #include "./EZ-Template/api.hpp"
 #include "globals.hpp"
 #include "./autons.hpp"
-#include "./sylib/sylib.hpp"
+
 #include "api.h"
 #include "autoSelect/selection.h"
 /**

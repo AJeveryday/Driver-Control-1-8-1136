@@ -14,13 +14,7 @@
 int tune_turn;
 // It's best practice to tune constants when the robot is empty and with heavier game objects, or with lifts up vs down.
 // If the objects are light or the cog doesn't change much, then there isn't a concern here.
-int currentSpeed;
-int targetSpeed = 127;
-int error;
-float Kp = 0.5;
-float Ki = 0.1;
-float Kd = 0.1;
-double targetSpeed;
+
 void default_constants() {
   chassis.set_slew_min_power(80, 80);
   chassis.set_slew_distance(7, 7);
@@ -56,17 +50,17 @@ void modified_exit_condition() {
 
 void autonflywheel(int rpm) {
   //rpm = rpm/6;
-  flywheel.set_velocity(rpm);
-  currentSpeed = flywheel.get_velocity();
+  flywheel.move_velocity(rpm);
+  currentSpeed = flywheel.get_actual_velocity();
   targetSpeed = currentSpeed/2;
   while(true){
-    currentSpeed = flywheel.get_velocity();
+    currentSpeed = flywheel.get_actual_velocity();
     error = targetSpeed- currentSpeed;
     float P = error * Kp;
     float I = error * Ki;
     float D = error * Kd;
     int output = P+I+D;
-    flywheel.set_velocity(output);
+    flywheel.move_velocity(output);
     pros::delay(20);
   }
 
