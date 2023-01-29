@@ -3,11 +3,6 @@
 #include "globals.hpp"
 
 
-/////
-// For instalattion, upgrading, documentations and tutorials, check out website!
-// https://ez-robotics.github.io/EZ-Template/
-/////
-
 ///
 // Constants
 ///
@@ -185,7 +180,7 @@ void autonselfawpleft() {
 }
 */
 
-/*void autonskills1() {
+void autonskills1() {
   autonflywheel();
   autonroller();
   intakeon();
@@ -229,7 +224,7 @@ void autonselfawpleft() {
   autonroller();
 
 }
-*/
+
 
 void skillsauton(){
   autonflywheel(flywheel_start);

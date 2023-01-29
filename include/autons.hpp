@@ -26,3 +26,4 @@ void autonindex();
 void autonright();
 void autonleft();
 void autonselfawpleft();
+void skillsauton();

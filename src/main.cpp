@@ -28,7 +28,6 @@ Drive chassis (
 
 void initialize() {
   // Print our branding over your terminal :D
-  ez::print_ez_template();
   
   pros::delay(500); // Stop the user from doing anything while legacy ports configure.
 
@@ -36,7 +35,7 @@ void initialize() {
 
   // Configure your chassis controls
   chassis.toggle_modify_curve_with_controller(true); // Enables modifying the controller curve with buttons on the joysticks
-  chassis.set_active_brake(0.1); // Sets the active brake kP. We recommend 0.1.
+  chassis.set_active_brake(0.2); // Sets the active brake kP. We recommend 0.1.
   chassis.set_curve_default(0.1, 0); // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)  
   default_constants(); // Set the drive to your own constants from autons.cpp!
   exit_condition_defaults(); // Set the exit conditions to your own constants from autons.cpp!
@@ -46,14 +45,10 @@ void initialize() {
   // chassis.set_right_curve_buttons(pros::E_CONTROLLER_DIGITAL_Y,    pros::E_CONTROLLER_DIGITAL_A);
 
   // Autonomous Selector using LLEMU
-  ez::as::auton_selector.add_autons({
-    Auton ("", autonright),
-    Auton("", autonleft),
-  });
 
   // Initialize chassis and auton selector
   chassis.initialize();
-  ez::as::initialize();
+  selector::init();
   
 }
 
@@ -84,7 +79,7 @@ void autonomous() {
   chassis.set_max_speed(115);
 
   if(selector::auton == 1){ autonright();};
-  if(selector::auton == 2){autonleft();};
+  if(selector::auton == 2){skillsauton();};
   printf("Selected Auton: %d\n", selector::auton);
   pros::delay(500);
   
@@ -135,7 +130,7 @@ void opcontrol() {
     float P = error * Kp;
     float I = error * Ki;
     float D = error * Kd;
-    int output = P+I+D;
+    int output = P+I+D ;
     flywheel.move_velocity(output+currentSpeed);
     pros::delay(20);
 
@@ -160,43 +155,26 @@ void opcontrol() {
     }
 
     // Flywheel
-    if ( (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) || (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) ) { // When L1 or L2 pressed,
-      if (flywheel_mode != 4) { // If flywheel not running at speed 4,
-        targetSpeed = 3600; // Run Flywheel Sp4
-        flywheel_mode = 4;
-      } else { // If flywheel already running, 
-        targetSpeed = 0; // Turn off flywheel motor
-        flywheel_mode = 0;
-      }
-    }
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)){ // When A pressed,
-      if (flywheel_mode != 1) { // If flywheel not running at speed 1,
-        targetSpeed = 3000; // Run Flywheel Sp1
-        flywheel_mode = 1;
-      } else { // If flywheel already running, 
-        targetSpeed = 0; // Turn off flywheel motor
-        flywheel_mode = 0;
-      }
-    }
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)){ // When B pressed,
-      if (flywheel_mode != 2) { // If flywheel not running at speed 2,
-        targetSpeed = 2500; // Run Flywheel Sp2
+    
+    if ((master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)))  { // When L1 pressed,
+      if (flywheel_mode != 2){ // If intake not running 600,
+        targetSpeed = 600; // Run Flywheel 600
         flywheel_mode = 2;
-      } else { // If flywheel already running, 
+      } else { // If flywheel already running,
         targetSpeed = 0; // Turn off flywheel motor
         flywheel_mode = 0;
       }
     }
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)){ // When X pressed,
-      if (flywheel_mode != 3) { // If flywheel not running at speed 3,
-        targetSpeed = 2000; // Run Flywheel Sp3
-        flywheel_mode = 3;
-      } else { // If flywheel already running, 
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))    { // When L2 pressed,
+      if (flywheel_mode != 1){ // If flywheel not running 300,
+        targetSpeed = 300; // Run Flywheel 300
+        flywheel_mode = 1;
+      } else { // If flywheel already running,
         targetSpeed = 0; // Turn off flywheel motor
         flywheel_mode = 0;
       }
     }
-
+    
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)){ // When Y pressed, 
       expansion1.set_value(true);
     }

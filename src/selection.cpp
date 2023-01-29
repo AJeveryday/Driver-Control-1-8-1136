@@ -5,7 +5,7 @@ namespace selector{
 
 int auton;
 int autonCount;
-const char *btnmMap[] = {"","","","","","","","","","",""}; // up to 10 autons
+const char *btnmMap[] = {"auton left","auton right","","","","","","","","",""}; // up to 10 autons
 
 lv_obj_t *tabview;
 lv_obj_t *redBtnm;
