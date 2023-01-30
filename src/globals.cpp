@@ -14,7 +14,7 @@ pros::Motor driveleftback(18, pros::E_MOTOR_GEARSET_06, true, pros::E_MOTOR_ENCO
 pros::Motor driverightback(14, pros::E_MOTOR_GEARSET_06, false, pros::E_MOTOR_ENCODER_COUNTS);
 pros::Motor flywheel(19, pros::E_MOTOR_GEARSET_06, true, pros::E_MOTOR_ENCODER_COUNTS);
 //SOLENOID
-pros::ADIDigitalOut expansion1('A', false);
+pros::ADIDigitalOut expansion1('B', true);
 
 //CONTROLLER
 pros::Controller controller(pros::E_CONTROLLER_MASTER);

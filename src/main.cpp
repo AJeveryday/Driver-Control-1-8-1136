@@ -36,7 +36,7 @@ void modified_exit_condition() {
 }
 
 //FLYWHEEL CONSTANTS-------------------------------------
-const int DRIVE_SPEED = 110; // This is 110/127 (around 87% of max speed).  We don't suggest making this 127.
+const int DRIVE_SPEED = 100; // This is 110/127 (around 87% of max speed).  We don't suggest making this 127.
                              // If this is 127 and the robot tries to heading correct, it's only correcting by
                              // making one side slower.  When this is 87%, it's correcting by making one side
                              // faster and one side slower, giving better heading correction.
@@ -77,13 +77,30 @@ void autonflywheel(int rpm) {
     pros::delay(10);
   }
 };
+void autonflywheel1(int rpm) {
+  //rpm = rpm/6;
+  flywheel.move_velocity(rpm);
+  currentSpeed = flywheel.get_actual_velocity();
+  targetSpeed = currentSpeed/2;
+
+  while(true){
+    currentSpeed = flywheel.get_actual_velocity();
+    error = targetSpeed- currentSpeed;
+    float P = error * Kp;
+    float I = error * Ki;
+    float D = error * Kd;
+    int output = P+I+D;
+    flywheel.move_velocity(output);
+    pros::delay(10);
+  }
+};
 
 void intakeon() {
   intake.move_velocity(-180);
 };
 
 void outtakeon() {
-  intake.move_velocity(180);
+  intake.move_velocity(600);
 }
 
 void intakeoff() {
@@ -129,7 +146,7 @@ void initialize() {
   
   pros::delay(500); // Stop the user from doing anything while legacy ports configure.
 
-  expansion1.set_value(false);
+  expansion1.set_value(true);
 
   // Configure your chassis controls
   chassis.toggle_modify_curve_with_controller(true); // Enables modifying the controller curve with buttons on the joysticks
@@ -162,7 +179,6 @@ void initialize() {
 
 
 void disabled() {
-  expansion1.set_value(true);
 }
 
 
@@ -175,65 +191,94 @@ void competition_initialize() {
 
 
 void autonomous() {
-
+  /*
+  //right auton 2
+  flywheel.move_velocity(600); // flywheel on
+  intakeon();
+  chassis.set_drive_pid(25, DRIVE_SPEED, true, true);// forward 25 in
+  chassis.wait_drive();
+  chassis.set_turn_pid(30, TURN_SPEED); // turn 35 deg
+  chassis.wait_drive();
+  intakeoff();
+  pros::delay(3000); //wait 3 seconds
+  pros::delay(1000); //wait 1 seconds
+  outtakeon();
+  pros::delay(3000);
+  intakeoff();
+  chassis.set_drive_pid(-25, DRIVE_SPEED, true, true);
+  chassis.wait_drive();
+  chassis.set_turn_pid(-45, TURN_SPEED);
+  chassis.wait_drive();
+  chassis.set_drive_pid(-10, DRIVE_SPEED, true, true);
+  chassis.wait_drive();
+  autonroller();
+  chassis.wait_drive();
+  //*/
+  
+  
+  
+  
   chassis.reset_pid_targets(); // Resets PID targets to 0
   chassis.reset_gyro(); // Reset gyro position to 0
   chassis.reset_drive_sensor(); // Reset drive sensors to 0
    // Set motors to hold.  This helps autonomous consistency.
   chassis.set_angle(0);
-  chassis.set_max_speed(115);
-
+  chassis.set_max_speed(125);
+  /*
   flywheel.move_velocity(550);
   chassis.set_drive_pid(-7, DRIVE_SPEED);
   chassis.wait_drive();
   autonroller();
+  
   intakeon();
   chassis.set_swing_pid(ez::LEFT_SWING, 45, SWING_SPEED);
   chassis.wait_drive();
-  chassis.set_drive_pid(45, DRIVE_SPEED, false, true);
+  chassis.set_drive_pid(45, DRIVE_SPEED);
   chassis.wait_drive();
   chassis.set_turn_pid(-(45-L1), TURN_SPEED);
+  flywheel.move_velocity(-510);
   chassis.wait_drive();
 
   outtakeon();
-  //autonflywheel(550);
+  pros::delay(3000);
   intakeoff();
 
-  chassis.set_drive_pid(15, DRIVE_SPEED, false, true);
+  chassis.set_drive_pid(15, DRIVE_SPEED);
   chassis.wait_drive();
 
   chassis.set_turn_pid(-135, TURN_SPEED);
   chassis.wait_drive();
-  chassis.set_drive_pid(-85, DRIVE_SPEED, false, true);
+  chassis.set_drive_pid(-85, DRIVE_SPEED);
   chassis.wait_drive();
   pros::delay(500);
-  chassis.set_drive_pid(13, DRIVE_SPEED, false, true);
+  chassis.set_drive_pid(13, DRIVE_SPEED);
   chassis.wait_drive();
   chassis.set_turn_pid(-90, TURN_SPEED);
   chassis.wait_drive();
   chassis.set_drive_pid(-30, DRIVE_SPEED);
   chassis.wait_drive();
   autonroller();
-
+  //*/
   
-  /* 
-  autonindex();
-  chassis.set_turn_pid((45), TURN_SPEED);           // Turn 45+ degrees clockwise
+  
+  //Right Roller Auton
+  flywheel.move_velocity(600);
+  chassis.set_drive_pid(-23.4, DRIVE_SPEED, true);  // Move 23.4 inches backward
+  chassis.wait_drive(); 
+  chassis.set_turn_pid(90, TURN_SPEED);             // Turn 90 degrees clockwise
   chassis.wait_drive();
-  chassis.set_drive_pid(17, DRIVE_SPEED, true);     // Move forward 17 inches
+  chassis.set_drive_pid(-6, DRIVE_SPEED, true);     // Move 5 inches backward
   chassis.wait_drive();
-  intakeon();
-  chassis.set_drive_pid(33.1, DRIVE_SPEED, true);   // Move forward 33.1 inches
+  autonroller();                                    // Claim Roller
   chassis.wait_drive();
+  chassis.set_drive_pid(10, DRIVE_SPEED, true);     // Move 10 inches forward
+  chassis.wait_drive();
+  
+  outtakeon();
+  pros::delay(3000);
   intakeoff();
-  chassis.set_turn_pid(-(90-L1), TURN_SPEED);       // Turn 90-L1 degrees counterclockwise
-  chassis.wait_drive();
-  autonindex();
-  chassis.set_turn_pid((90-L1), TURN_SPEED);        // Turn 90-L1 degrees clockwise
-  chassis.wait_drive();
-  intakeon();
-  chassis.set_turn_pid(18, DRIVE_SPEED);            // Move forward 18 inches
-  intakeoff(); //*/
+  //*/
+
 }
 
 
@@ -243,18 +288,14 @@ void opcontrol() {
   
   
   expansion1.set_value(false);
-  chassis.set_drive_brake(MOTOR_BRAKE_COAST);
-  flywheel.move_velocity(3600);
-  currentSpeed = flywheel.get_actual_velocity();
-  targetSpeed = currentSpeed/2;
+  
 
   
   int intake_mode = 0; // Sets up intake control for buttons
   int flywheel_mode = 0; //Sets up flywheel control for buttons
-  chassis.set_drive_pid(23, DRIVE_SPEED);
   while (true) {
     
-
+   
     chassis.tank(); // Tank control
     // chassis.arcade_standard(ez::SPLIT); // Standard split arcade
     // chassis.arcade_standard(ez::SINGLE); // Standard single arcade
@@ -263,16 +304,21 @@ void opcontrol() {
 
     // . . .
     // Put more user control code here!
+    
     // . . .
-    currentSpeed = flywheel.get_actual_velocity();
-    error = targetSpeed- currentSpeed;
-    float P = error * Kp;
-    float I = error * Ki;
-    float D = error * Kd;
-    int output = P+I+D ;
-    flywheel.move_velocity(output+currentSpeed);
-    pros::delay(20);
-
+    
+    /*
+    if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)){
+      flywheel.move(127);
+    }
+    if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)){
+      flywheel.move(110);
+    }
+    if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)){
+      flywheel.move(90);
+    } */
+    
+    
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) { // When R1 pressed,
       if (intake_mode == 0){ // If intake not running,
         intake.move_velocity(170); // Run Intake
@@ -294,24 +340,14 @@ void opcontrol() {
     }
 
     // Flywheel
-    
     if ((master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)))  { // When L1 pressed,
-      if (flywheel_mode != 2){ // If intake not running 600,
-        targetSpeed = 600; // Run Flywheel 600
-        flywheel_mode = 2;
-      } else { // If flywheel already running,
-        targetSpeed = 0; // Turn off flywheel motor
-        flywheel_mode = 0;
-      }
+      flywheel.move_velocity(600);
     }
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))    { // When L2 pressed,
-      if (flywheel_mode != 1){ // If flywheel not running 300,
-        targetSpeed = 300; // Run Flywheel 300
-        flywheel_mode = 1;
-      } else { // If flywheel already running,
-        targetSpeed = 0; // Turn off flywheel motor
-        flywheel_mode = 0;
-      }
+      flywheel.move_velocity(300);
+    }
+    if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))    { // When B pressed,
+      flywheel.move_velocity(0);
     }
     
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)){ // When Y pressed, 

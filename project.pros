@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "DriverControl",
+    "project_name": "RightAuton 2pm",
     "target": "v5",
     "templates": {
       "EZ-Template": {
@@ -346,9 +346,9 @@
       }
     },
     "upload_options": {
-      "description": "Driver Control",
-      "icon": "robot",
-      "slot": 1
+      "description": "2pm 1/29/23",
+      "icon": "pizza",
+      "slot": 2
     }
   }
 }
