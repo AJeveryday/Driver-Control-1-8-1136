@@ -59,43 +59,33 @@ float Ki = 0;
 float Kd = 0;
 double targetSpeed = 0;
 //FLYWHEEL CONSTANTS--------------------------------------
-
-void autonflywheel(void *param) {
-  
-  int rpm = 600;
-  flywheel.move_velocity(rpm);
-  currentSpeed = flywheel.get_actual_velocity();
-  targetSpeed = currentSpeed/2;
-
-  while (targetSpeed != 0) {
-    currentSpeed = flywheel.get_actual_velocity();
-    error = targetSpeed- currentSpeed;
-    float P = error * Kp;
-    float I = error * Ki;
-    float D = error * Kd;
-    int output = P+I+D;
-    flywheel.move_velocity(output);
-    pros::delay(15);
-  }
+void wait(int waitTime) {
+    int t = 0;
+    while (t < waitTime) {
+        t += 2;
+        flywheel::voltageUpdate();
+        pros::delay(20);
+    };
 };
 
+
 void intakeon() {
-  intake.move_velocity(-180);
+  intake::spin(-12000);
 };
 
 void outtakeon() {
-  intake.move_velocity(600);
+  intake::spin(12000);
   pros::delay(2000);
 }
 
 void intakeoff() {
-  intake.move_velocity(0);
+  intake::spin(0);
 };
 
 void autonroller() {
-  intake.move_velocity(-200);
+  intake::spin(-400);
   pros::delay(375);
-  intake.move_velocity(0);
+  intake::spin(0);
 };
 
 
@@ -133,7 +123,7 @@ void initialize() {
 
   expansion1.set_value(false);
 
-  pros::Task flywheel_tbh(autonflywheel, 0, TASK_PRIORITY_DEFAULT);
+  
 
   // Configure your chassis controls
   chassis.toggle_modify_curve_with_controller(true); // Enables modifying the controller curve with buttons on the joysticks
@@ -201,9 +191,6 @@ void autonomous() {
   autonroller();
   chassis.wait_drive();
   //*/
-  
-  
-  pros::Task flywheel_tbh(autonflywheel, 0, TASK_PRIORITY_DEFAULT);
   
   chassis.reset_pid_targets(); // Resets PID targets to 0
   chassis.reset_gyro(); // Reset gyro position to 0
@@ -302,7 +289,6 @@ void autonomous() {
 
 
 
-
 void opcontrol() {
   
   
@@ -315,58 +301,42 @@ void opcontrol() {
   while (true) {
     
    
-    chassis.tank(); // Tank control
-    // chassis.arcade_standard(ez::SPLIT); // Standard split arcade
-    // chassis.arcade_standard(ez::SINGLE); // Standard single arcade
-    // chassis.arcade_flipped(ez::SPLIT); // Flipped split arcade
-    // chassis.arcade_flipped(ez::SINGLE); // Flipped single arcade
-
-    // . . .
-    // Put more user control code here!
-    
-    // . . .
-    
-    /*
-    if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)){
-      flywheel.move(127);
-    }
-    if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)){
-      flywheel.move(110);
-    }
-    if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)){
-      flywheel.move(90);
-    } */
+    chassis.tank(); 
     
     
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) { // When R1 pressed,
       if (intake_mode == 0){ // If intake not running,
-        intake.move_velocity(170); // Run Intake
+        intake::spin(12000); // Run Intake
         intake_mode = 1;
       } else { // If intake already running,
-        intake.move_velocity(0); // Turn off intake motor
+        intake::spin(0); // Turn off intake motor
         intake_mode = 0;
       }
     }
     // Outtake
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) { // When R2 pressed,
       if (intake_mode == 0){ // If outtake not running,
-        intake.move_velocity(-170); // Run Outtake
+        intake::spin(-12000);// Run Outtake
         intake_mode = -1;
       } else { // If outtake already running,
-        intake.move_velocity(0); // Turn off intake motor
+        intake::spin(0); // Turn off intake motor
         intake_mode = 0;
       }
     }
 
     // Flywheel
     if ((master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)))  { // When L1 pressed,
-      flywheel.move_velocity(600);
+        flywheel::setTargetSpeed(LONG_RANGE_POWER);
+        wait(3000);
+        
     }
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))    { // When L2 pressed,
-      flywheel.move_velocity(300);
+      flywheel::setTargetSpeed(SHORT_RANGE_POWER);
+      wait(3000);
     }
     if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))    { // When B pressed,
-      flywheel.move_velocity(0);
+      flywheel::setTargetSpeed(1);
+      wait(3000);
     }
     
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)){ // When Y pressed, 
