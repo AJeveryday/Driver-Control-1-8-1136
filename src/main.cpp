@@ -60,13 +60,14 @@ float Kd = 0;
 double targetSpeed = 0;
 //FLYWHEEL CONSTANTS--------------------------------------
 
-void autonflywheel(int rpm) {
-  //rpm = rpm/6;
+void autonflywheel(void *param) {
+  
+  int rpm = 600;
   flywheel.move_velocity(rpm);
   currentSpeed = flywheel.get_actual_velocity();
   targetSpeed = currentSpeed/2;
 
-  for (int i=0; i<=3000/20; i++) {
+  while (targetSpeed != 0) {
     currentSpeed = flywheel.get_actual_velocity();
     error = targetSpeed- currentSpeed;
     float P = error * Kp;
@@ -74,24 +75,7 @@ void autonflywheel(int rpm) {
     float D = error * Kd;
     int output = P+I+D;
     flywheel.move_velocity(output);
-    pros::delay(10);
-  }
-};
-void autonflywheel1(int rpm) {
-  //rpm = rpm/6;
-  flywheel.move_velocity(rpm);
-  currentSpeed = flywheel.get_actual_velocity();
-  targetSpeed = currentSpeed/2;
-
-  while(true){
-    currentSpeed = flywheel.get_actual_velocity();
-    error = targetSpeed- currentSpeed;
-    float P = error * Kp;
-    float I = error * Ki;
-    float D = error * Kd;
-    int output = P+I+D;
-    flywheel.move_velocity(output);
-    pros::delay(10);
+    pros::delay(15);
   }
 };
 
@@ -101,6 +85,7 @@ void intakeon() {
 
 void outtakeon() {
   intake.move_velocity(600);
+  pros::delay(2000);
 }
 
 void intakeoff() {
@@ -143,10 +128,12 @@ Drive chassis (
 
 void initialize() {
   // Print our branding over your terminal :D
-  
+
   pros::delay(500); // Stop the user from doing anything while legacy ports configure.
 
-  expansion1.set_value(true);
+  expansion1.set_value(false);
+
+  pros::Task flywheel_tbh(autonflywheel, 0, TASK_PRIORITY_DEFAULT);
 
   // Configure your chassis controls
   chassis.toggle_modify_curve_with_controller(true); // Enables modifying the controller curve with buttons on the joysticks
@@ -216,7 +203,7 @@ void autonomous() {
   //*/
   
   
-  
+  pros::Task flywheel_tbh(autonflywheel, 0, TASK_PRIORITY_DEFAULT);
   
   chassis.reset_pid_targets(); // Resets PID targets to 0
   chassis.reset_gyro(); // Reset gyro position to 0
@@ -224,6 +211,37 @@ void autonomous() {
    // Set motors to hold.  This helps autonomous consistency.
   chassis.set_angle(0);
   chassis.set_max_speed(125);
+
+  targetSpeed = 600;
+  chassis.wait_drive();
+  chassis.set_drive_pid(36.7, DRIVE_SPEED, false, true);
+  chassis.wait_drive();
+  chassis.set_turn_pid(40, TURN_SPEED);
+  chassis.wait_drive();
+  targetSpeed = 600;
+  pros::delay(4000);
+  outtakeon();
+  pros::delay(2000);
+  chassis.wait_drive();
+  targetSpeed = 0;
+  chassis.set_drive_pid(-5, DRIVE_SPEED, false, true);
+  chassis.wait_drive();
+  intakeoff();
+  chassis.set_turn_pid(-30, TURN_SPEED);
+  chassis.wait_drive();
+  chassis.set_drive_pid(-50, DRIVE_SPEED, false, true);
+  chassis.wait_drive();
+  chassis.set_turn_pid(0, TURN_SPEED);
+  chassis.wait_drive();
+  chassis.set_turn_pid(0, TURN_SPEED);
+  chassis.wait_drive();
+  chassis.set_drive_pid(-10, DRIVE_SPEED, false, true);
+  chassis.wait_drive();
+  autonroller();
+  
+
+
+
   /*
   flywheel.move_velocity(550);
   chassis.set_drive_pid(-7, DRIVE_SPEED);
@@ -262,6 +280,7 @@ void autonomous() {
   
   
   //Right Roller Auton
+  /*
   flywheel.move_velocity(600);
   chassis.set_drive_pid(-23.4, DRIVE_SPEED, true);  // Move 23.4 inches backward
   chassis.wait_drive(); 
