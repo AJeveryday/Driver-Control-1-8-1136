@@ -294,37 +294,25 @@ void opcontrol() {
   
   expansion1.set_value(false);
   
-
+  flywheel::setTargetSpeed(0);
   
   int intake_mode = 0; // Sets up intake control for buttons
   int flywheel_mode = 0; //Sets up flywheel control for buttons
   while (true) {
     
-   
+   //DRIVE
     chassis.tank(); 
     
+    //INTAKE
     
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) { // When R1 pressed,
-      if (intake_mode == 0){ // If intake not running,
-        intake::spin(12000); // Run Intake
-        intake_mode = 1;
-      } else { // If intake already running,
-        intake::spin(0); // Turn off intake motor
-        intake_mode = 0;
-      }
-    }
-    // Outtake
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) { // When R2 pressed,
-      if (intake_mode == 0){ // If outtake not running,
-        intake::spin(-12000);// Run Outtake
-        intake_mode = -1;
-      } else { // If outtake already running,
-        intake::spin(0); // Turn off intake motor
-        intake_mode = 0;
-      }
-    }
-
-    // Flywheel
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))intake::spin(1); // When R1 pressed,
+    else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))intake::spin(-1);
+    else intake::spin(0);
+    
+    //EXPANSION
+    if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y))expansion1.set_value(true);
+  
+    // FLYWHEEL
     if ((master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)))  { // When L1 pressed,
         flywheel::setTargetSpeed(LONG_RANGE_POWER);
         wait(3000);
@@ -337,10 +325,6 @@ void opcontrol() {
     if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))    { // When B pressed,
       flywheel::setTargetSpeed(1);
       wait(3000);
-    }
-    
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)){ // When Y pressed, 
-      expansion1.set_value(true);
     }
 
     pros::delay(ez::util::DELAY_TIME); // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
