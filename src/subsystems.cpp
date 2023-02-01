@@ -68,9 +68,16 @@ namespace odometry{
         odometryController();
     }
     void move_to_point(int target_x, int target_y){
-        target_distance = sqrt((x_pos - target_x) * (x_pos - target_x) + (y_pos - target_y) * (y_pos - target_y));
-        target_angle = atan2(target_y - y_pos, target_x - x_pos) - theta;
+        double target_distance = sqrt((x_pos - target_x) * (x_pos - target_x) + (y_pos - target_y) * (y_pos - target_y));
+        double target_angle = atan2(target_y - y_pos, target_x - x_pos) - theta;
 
-        chassis.set_drive_pid(target_distace, DRIVE_SPEED, false, true);
+        chassis.set_drive_pid(target_distance, 110, false, true);
+        pros::delay(20);
+    }
+    void interference_move_to_point(int targetx, int targety){
+        if(chassis.interfered){
+            move_to_point(targetx, targety);
+            pros::delay(20);
+        }
     }
 }

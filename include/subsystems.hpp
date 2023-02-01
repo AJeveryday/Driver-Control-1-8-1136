@@ -39,4 +39,6 @@ namespace odometry {
     extern pros::Rotation backEncoder;
     void odometryController();
     void update();
+    void move_to_point(int target_x, int target_y);
+    void interference_move_to_point(int targetx, int targety);
 }
