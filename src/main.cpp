@@ -116,13 +116,14 @@ Drive chassis (
 
 );
 
+
 void initialize() {
   // Print our branding over your terminal :D
-
+  pros::lcd::initialize();
   pros::delay(500); // Stop the user from doing anything while legacy ports configure.
 
   expansion1.set_value(false);
-
+  odometry::odometryController();
   
 
   // Configure your chassis controls
@@ -298,11 +299,12 @@ void opcontrol() {
   
   int intake_mode = 0; // Sets up intake control for buttons
   int flywheel_mode = 0; //Sets up flywheel control for buttons
-  while (true) {
-    
+  while (true) { 
+    odometry::update();
    //DRIVE
     chassis.tank(); 
     
+    pros::delay(20);
     //INTAKE
     
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))intake::spin(1); // When R1 pressed,

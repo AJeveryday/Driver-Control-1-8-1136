@@ -33,3 +33,10 @@ namespace flywheel {
     void brake(bool mode);
 
 };
+namespace odometry {
+    extern pros::Rotation leftEncoder;
+    extern pros::Rotation rightEncoder;
+    extern pros::Rotation backEncoder;
+    void odometryController();
+    void update();
+}

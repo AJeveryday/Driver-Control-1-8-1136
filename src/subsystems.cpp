@@ -45,3 +45,26 @@ namespace intake {
        intake.move_voltage(0);
     };
 }
+namespace odometry{
+    pros::Rotation leftEncoder(1);
+    pros::Rotation rightEncoder(2);
+    pros::Rotation backEncoder(3);
+
+    double wheel_circumference = 4.125 * 3.14159265358979;
+    double left_distance, right_distance, back_distance;
+    double x_pos, y_pos, theta;
+
+    void odometryController() {
+    left_distance = leftEncoder.get_position() * wheel_circumference;
+    right_distance = rightEncoder.get_position() * wheel_circumference;
+    back_distance = backEncoder.get_position() * wheel_circumference;
+
+    x_pos = x_pos + (left_distance + right_distance + back_distance) / 3 * cos(theta);
+    y_pos = y_pos + (left_distance + right_distance + back_distance) / 3 * sin(theta);
+    theta = theta + (right_distance - left_distance) / (3 * wheel_circumference);
+    pros::lcd::print(0, "Odometry: %d\n", x_pos, y_pos, theta);
+    }
+    void update (){
+        odometryController();
+    }
+}
