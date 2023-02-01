@@ -1,9 +1,10 @@
 #include "main.h"
 
-
+#define FLYWHEEL_GEARSET pros::E_MOTOR_GEARSET_06
+#define INTAKE_GEARSET pros::E_MOTOR_GEARSET_06
 namespace flywheel{
      pros::Motor motor(FLYWHEEL_PORT, FLYWHEEL_GEARSET);
-
+    
     int targetSpeed = 0;
     double actualSpeed = 0;
 

@@ -4,7 +4,7 @@
 namespace intake {
 
     #define INTAKE_PORT 2
-    #define INTAKE_GEARSET E_MOTOR_GEAR_600
+    
     
 
     extern pros::Motor intake;
@@ -17,7 +17,7 @@ namespace intake {
 namespace flywheel {
 
     #define FLYWHEEL_PORT 19
-    #define FLYWHEEL_GEARSET E_MOTOR_GEAR_600
+    
     #define LONG_RANGE_POWER 0.6666667
     #define SHORT_RANGE_POWER 0.3333333
     #define MAXIMUM_VOLTAGE 12000
