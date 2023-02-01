@@ -73,6 +73,7 @@ namespace odometry{
         double target_angle = atan2(target_y - y_pos, target_x - x_pos) - theta;
 
         chassis.set_drive_pid(target_distance, 110, false, true);
+        chassis.set_turn_pid(target_angle, 90);
         pros::delay(20);
     }
     void interference_move_to_point(int targetx, int targety){
