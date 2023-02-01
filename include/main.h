@@ -41,7 +41,7 @@
 #include "api.h"
 #include "autoSelect/selection.h"
 #include "subsystems.hpp"
-
+extern Drive chassis;
 
 /**
  * You should add more #includes here

@@ -1,7 +1,7 @@
 #include "main.h"
 
 
-namespace flywheel1{
+namespace flywheel{
      pros::Motor motor(FLYWHEEL_PORT, FLYWHEEL_GEARSET);
 
     int targetSpeed = 0;
@@ -66,5 +66,11 @@ namespace odometry{
     }
     void update (){
         odometryController();
+    }
+    void move_to_point(int target_x, int target_y){
+        target_distance = sqrt((x_pos - target_x) * (x_pos - target_x) + (y_pos - target_y) * (y_pos - target_y));
+        target_angle = atan2(target_y - y_pos, target_x - x_pos) - theta;
+
+        chassis.set_drive_pid(target_distace, DRIVE_SPEED, false, true);
     }
 }
