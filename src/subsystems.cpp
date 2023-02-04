@@ -54,20 +54,41 @@ namespace odometry{
     double wheel_circumference = 4.125 * 3.14159265358979;
     double left_distance, right_distance, back_distance;
     double x_pos, y_pos, theta;
-
+    //constants
+    double robothalf = 6.212;
     void odometryController() {
-    left_distance = leftEncoder.get_position() * wheel_circumference;
-    right_distance = rightEncoder.get_position() * wheel_circumference;
-    back_distance = backEncoder.get_position() * wheel_circumference;
+        left_distance = leftEncoder.get_position() * wheel_circumference;
+        right_distance = rightEncoder.get_position() * wheel_circumference;
+        back_distance = backEncoder.get_position() * wheel_circumference;
 
-    x_pos = x_pos + (left_distance + right_distance + back_distance) / 3 * cos(theta);
-    y_pos = y_pos + (left_distance + right_distance + back_distance) / 3 * sin(theta);
-    theta = theta + (right_distance - left_distance) / (3 * wheel_circumference);
-    pros::lcd::print(0, "Odometry: %d\n", x_pos, y_pos, theta);
+        //x_pos = x_pos + (left_distance + right_distance + back_distance) / 3 * cos(theta);
+        //y_pos = y_pos + (left_distance + right_distance + back_distance) / 3 * sin(theta);
+        
+        theta = theta + (right_distance - left_distance) / robothalf*2;//(3 * wheel_circumference)
+        y_pos = y_pos + (2 * ((right_distance/theta + robothalf)*(2*(sin((theta/2))))));
+        x_pos = x_pos + (2 * ((left_distance/theta + robothalf)*(2*(sin((theta/2))))));
+        pros::lcd::print(0, "Odometry: %d\n", x_pos, y_pos, theta);
     }
     void update (){
         odometryController();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     void move_to_point(int target_x, int target_y){
         double target_distance = sqrt((x_pos - target_x) * (x_pos - target_x) + (y_pos - target_y) * (y_pos - target_y));
         double target_angle = atan2(target_y - y_pos, target_x - x_pos) - theta;
