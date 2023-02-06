@@ -2,8 +2,7 @@
 #include "pros/misc.h"
 #include "globals.hpp"
 
-//test comment
-//2nd test comment
+//4th test comment
 
 /////
 // For instalattion, upgrading, documentations and tutorials, check out website!
