@@ -123,7 +123,7 @@ void initialize() {
   pros::delay(500); // Stop the user from doing anything while legacy ports configure.
 
   expansion1.set_value(false);
-  odometry::odometryController();
+  //odometry::odometryController();
   
 
   // Configure your chassis controls
@@ -300,7 +300,7 @@ void opcontrol() {
   int intake_mode = 0; // Sets up intake control for buttons
   int flywheel_mode = 0; //Sets up flywheel control for buttons
   while (true) { 
-    odometry::update();
+    //odometry::update();
    //DRIVE
     chassis.tank(); 
     

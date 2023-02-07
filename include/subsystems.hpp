@@ -33,12 +33,14 @@ namespace flywheel {
     void brake(bool mode);
 
 };
+
 namespace odometry {
     extern pros::Rotation leftEncoder;
     extern pros::Rotation rightEncoder;
     extern pros::Rotation backEncoder;
     void odometryController();
-    void update();
-    void move_to_point(int target_x, int target_y);
-    void interference_move_to_point(int targetx, int targety);
+    void update(double linearvel, double turnvel);
+    int find_min_angle(double target_heading, double current_heading);
+    int move_to_pose_step(int currentPos, double current_heading, int targetPos, double target_heading, double Kp_lin, double Kp_turn, double r, double turnMax, double linMax);
+    
 }

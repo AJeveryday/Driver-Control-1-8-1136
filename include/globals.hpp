@@ -17,3 +17,5 @@ extern pros::Controller controller;
 
 
 
+extern pros::MotorGroup leftdrive;
+extern pros::MotorGroup rightdrive;

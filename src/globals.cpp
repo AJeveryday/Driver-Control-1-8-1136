@@ -18,3 +18,6 @@ pros::ADIDigitalOut expansion1('A', false);
 
 //CONTROLLER
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
+
+pros::MotorGroup leftdrive({driveleftfront,leftmid, driveleftback});
+pros::MotorGroup rightdrive({driverightfront,rightmid, driverightback});

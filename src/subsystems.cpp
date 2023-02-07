@@ -1,4 +1,6 @@
 #include "main.h"
+#include <iterator>
+#include <list>
 
 #define FLYWHEEL_GEARSET pros::E_MOTOR_GEARSET_06
 #define INTAKE_GEARSET pros::E_MOTOR_GEARSET_06
@@ -46,11 +48,42 @@ namespace intake {
        intake.move_voltage(0);
     };
 }
+/*
 namespace odometry{
     pros::Rotation leftEncoder(1);
     pros::Rotation rightEncoder(2);
     pros::Rotation backEncoder(3);
+    pros::Imu imu_sensor(20);
+  
+    double initX = 0;
+    double initY = 0;
+    double targetX = 4;
+    double targetY = 2.5;
+    double currentHeading = imu_sensor.get_heading();
+    double targetHeading = 225;
+    double tolerance = 0.1;
+    double Kp_lin = 20;
+    double Kp_turn = 1.7;
+    double r = 1;
 
+    auto currentPos = [initX, initY];
+    auto targetPos = [targetX, targetY];
+    void find_min_angle(double target_heading, double current_heading){
+        double turnAngle = targetHeading - currentHeading;
+        if (turnAngle > 180 or turnAngle < -180){
+            turnAngle = -1 * signbit(turnAngle) * (360 - abs(turnAngle));
+        }
+    
+        return turnAngle;
+    }
+    void move_to_pose_step(currentPos, currentHeading, targetPos, targetHeading, Kp_lin, Kp_turn, r, turnMax = 100, linMax = 70){
+        currentX, currentY = currentPos[0], currentPos(1);
+        targetX, targetY = targetPos[0], targetPos[1];
+        
+        double absTargetAngle = atan2((targetY-currentY), (targetX - currentX)) * 180/3.14159265358979;
+    }
+    
+    
     double wheel_circumference = 4.125 * 3.14159265358979;
     double left_distance, right_distance, back_distance;
     double x_pos, y_pos, theta;
@@ -72,35 +105,94 @@ namespace odometry{
     void update (){
         odometryController();
     }
+    
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    void move_to_point(int target_x, int target_y){
-        double target_distance = sqrt((x_pos - target_x) * (x_pos - target_x) + (y_pos - target_y) * (y_pos - target_y));
-        double target_angle = atan2(target_y - y_pos, target_x - x_pos) - theta;
-
-        chassis.set_drive_pid(target_distance, 110, false, true);
-        chassis.set_turn_pid(target_angle, 90);
-        pros::delay(20);
-    }
-    void interference_move_to_point(int targetx, int targety){
-        if(chassis.interfered){
-            move_to_point(targetx, targety);
-            pros::delay(20);
-        }
-    }
 }
+*/
+
+namespace odometry{
+    pros::Imu imu_sensor(20);
+    double initX = 0;
+    double initY = 0;
+    double targetX = 4;
+    double targetY = 2.5;
+    double currentHeading = imu_sensor.get_heading();
+    double targetHeading = 225;
+    double tolerance = 0.1;
+    double Kp_lin = 20;
+    double Kp_turn = 1.7;
+    double r = 1;
+    double pi = 3.14159265359;
+    double turnError;
+    int current_pos[2] = {initX, initY};
+    int target_pos[2] = {targetX, targetY};
+
+
+    int turn_min_angle(double target_heading, double current_heading){
+        double turnAngle = targetHeading - currentHeading;
+        if (turnAngle > 180 or turnAngle < -180){
+            turnAngle = -1 * signbit(turnAngle) * (360 - abs(turnAngle));
+        }
+    
+        return turnAngle;
+    }
+    int move_to_pose_step (int currentPos[2], double current_heading, int targetPos[2], double target_heading, double Kp_lin, double Kp_turn, double r = 1, double turnMax = 100, double linMax = 70){
+        current_heading = currentHeading;
+        target_heading = targetHeading;
+        currentPos = current_pos;
+        targetPos = target_pos;
+        double currentX = currentPos[0];
+        double currentY = currentPos[1];
+        double targetX = targetPos[0];
+        double targetY = targetPos[1];
+
+        double absTargetAngle = atan2((targetY-currentY), (targetX-currentX)) *180/pi;
+        if (absTargetAngle < 0){absTargetAngle += 360;};
+
+        double D = sqrt((targetX-currentX)*((targetX-currentX)) + (targetY-currentY)*((targetY-currentY)));
+        double alpha = find_min_angle(absTargetAngle, targetHeading);
+        double errorTerm1 = find_min_angle(absTargetAngle, currentHeading);
+
+        double beta = atan(r/D) *180/pi;
+        if (alpha < 0){
+            beta = -beta;
+        }
+        if (abs(alpha) < abs(beta)){
+            turnError = errorTerm1 + alpha;
+        }
+        else{
+            turnError = errorTerm1 + beta;
+        }
+        double linearVel = Kp_lin * D;
+        double turnVel = Kp_turn * turnError;
+
+        bool closeToTarget = false;
+        if (D < tolerance){
+            closeToTarget = true;
+        }
+        if(closeToTarget){
+            linearVel =  Kp_lin * D * signbit(cos(turnError *pi/180));  
+    
+            turnError = find_min_angle(targetHeading, currentHeading);
+            turnVel = Kp_turn * atan(tan(turnError *pi/180)) *180/pi;
+        }   
+        if (abs(linearVel) > linMax){linearVel = signbit(linearVel) * linMax;};
+            
+        if (abs(turnVel) > turnMax){turnVel = signbit(turnVel) * turnMax;};
+
+        if (linearVel > (100 - abs(turnVel))){linearVel = 100 - abs(turnVel);};
+            
+            
+        leftdrive.move(linearVel - turnVel);
+        rightdrive.move(linearVel + turnVel);
+
+        //if (abs(leftdrive.get_actual_velocities) > 100){signbit(leftSideVel)*leftSideVel;};
+        //if (abs(rightdrive) > 100){signbit(rightSideVel)*rightSideVel;} 
+        //double stepDis = (leftSideVel + rightSideVel)/100 * maxLinVelfeet * dt/1000;
+        return linearVel, turnVel;
+    }
+    
+}
+
