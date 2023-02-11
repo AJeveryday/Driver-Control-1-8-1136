@@ -1,4 +1,6 @@
+//#include "selection.hpp"
 #include "main.h"
+#include "globals.hpp"
 #include "../include/autoSelect/selection.h"
 
 namespace selector{

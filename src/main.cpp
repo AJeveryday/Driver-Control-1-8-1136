@@ -95,10 +95,10 @@ void autonroller() {
 // Chassis constructor
 Drive chassis (
   // Left Chassis Ports (negative port will reverse it!)
-  {-3,-5,-18},
+  {-(port::lf),-(port::lm),-(port::lb)},
 
   // Right Chassis Ports (negative port will reverse it!)
-  {16, 8, 14}
+  {port::rf, port::rm, port::rb}
 
   // IMU Port
   ,21
@@ -307,18 +307,17 @@ void opcontrol() {
     pros::delay(20);
     //INTAKE
     
-    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))intake::spin(1); // When R1 pressed,
-    else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))intake::spin(-1);
-    else intake::spin(0);
-    
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {intake::spin(1);} // When R1 pressed,
+    else if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {intake::spin(-1);}
+    else {intake::spin(0);}
+
     //EXPANSION
     if(master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y))expansion1.set_value(true);
   
     // FLYWHEEL
     if ((master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)))  { // When L1 pressed,
-        flywheel::setTargetSpeed(LONG_RANGE_POWER);
-        wait(3000);
-        
+      flywheel::setTargetSpeed(LONG_RANGE_POWER);
+      wait(3000);
     }
     if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))    { // When L2 pressed,
       flywheel::setTargetSpeed(SHORT_RANGE_POWER);

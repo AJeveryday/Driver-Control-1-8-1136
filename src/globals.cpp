@@ -1,16 +1,23 @@
 #include "main.h"
+#include "globals.hpp"
 #include "pros/adi.hpp"
 
+namespace port {
+    // !                                                !
+    //  TO VIEW AND EDIT PORT NUMBERS, GO TO GLOBALS.HPP
+    // !                                                !
+}
 
-//MOTORS
+//DRIVE MOTORS
+pros::Motor driveleftfront(port::lf, pros::E_MOTOR_GEARSET_06, true, pros::E_MOTOR_ENCODER_COUNTS);
+pros::Motor driverightfront(port::rf, pros::E_MOTOR_GEARSET_06, false, pros::E_MOTOR_ENCODER_COUNTS);
+pros::Motor leftmid(port::lm, pros::E_MOTOR_GEARSET_06, true, pros::E_MOTOR_ENCODER_COUNTS);
+pros::Motor rightmid(port::rm, pros::E_MOTOR_GEARSET_06, false, pros::E_MOTOR_ENCODER_COUNTS);
+pros::Motor driveleftback(port::lb, pros::E_MOTOR_GEARSET_06, true, pros::E_MOTOR_ENCODER_COUNTS);
+pros::Motor driverightback(port::rb, pros::E_MOTOR_GEARSET_06, false, pros::E_MOTOR_ENCODER_COUNTS);
 
-
-pros::Motor driveleftfront(3, pros::E_MOTOR_GEARSET_06, true, pros::E_MOTOR_ENCODER_COUNTS);
-pros::Motor driverightfront(16, pros::E_MOTOR_GEARSET_06, false, pros::E_MOTOR_ENCODER_COUNTS);
-pros::Motor leftmid(5, pros::E_MOTOR_GEARSET_06, true, pros::E_MOTOR_ENCODER_COUNTS);
-pros::Motor rightmid(8, pros::E_MOTOR_GEARSET_06, false, pros::E_MOTOR_ENCODER_COUNTS);
-pros::Motor driveleftback(18, pros::E_MOTOR_GEARSET_06, true, pros::E_MOTOR_ENCODER_COUNTS);
-pros::Motor driverightback(14, pros::E_MOTOR_GEARSET_06, false, pros::E_MOTOR_ENCODER_COUNTS);
+pros::MotorGroup leftdrive({driveleftfront,leftmid, driveleftback});
+pros::MotorGroup rightdrive({driverightfront,rightmid, driverightback});
 
 
 //SOLENOID
@@ -18,6 +25,3 @@ pros::ADIDigitalOut expansion1('A', false);
 
 //CONTROLLER
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
-
-pros::MotorGroup leftdrive({driveleftfront,leftmid, driveleftback});
-pros::MotorGroup rightdrive({driverightfront,rightmid, driverightback});

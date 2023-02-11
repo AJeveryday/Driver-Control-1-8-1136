@@ -35,12 +35,9 @@
 #define PROS_USE_LITERALS
 
 #include "./EZ-Template/api.hpp"
-#include "globals.hpp"
-
 
 #include "api.h"
 #include "autoSelect/selection.h"
-#include "subsystems.hpp"
 #include <math.h>
 extern Drive chassis;
 

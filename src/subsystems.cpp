@@ -1,11 +1,15 @@
+/* #include "subsystems.cpp"; Already included in */ #include "globals.hpp"
 #include "main.h"
 #include <iterator>
 #include <list>
 
+// Flywheel Port defined in globals.cpp
+// Intake Port defined in globals.cpp
 #define FLYWHEEL_GEARSET pros::E_MOTOR_GEARSET_06
 #define INTAKE_GEARSET pros::E_MOTOR_GEARSET_06
+
 namespace flywheel{
-     pros::Motor motor(FLYWHEEL_PORT, FLYWHEEL_GEARSET);
+    pros::Motor motor(port::flywheel, FLYWHEEL_GEARSET);
     
     int targetSpeed = 0;
     double actualSpeed = 0;
@@ -33,7 +37,7 @@ namespace flywheel{
 }
 namespace intake {
 
-    pros::Motor intake(INTAKE_PORT, INTAKE_GEARSET);
+    pros::Motor intake(port::intake, INTAKE_GEARSET);
 
 
     void spin(double pwr) {
@@ -45,9 +49,10 @@ namespace intake {
     void spinForTime(double pwr, int time) {
         intake.move_voltage(pwr);
         pros::delay(time * 1000);
-       intake.move_voltage(0);
+        intake.move_voltage(0);
     };
 }
+
 /*
 namespace odometry{
     pros::Rotation leftEncoder(1);
